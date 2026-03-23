@@ -1,6 +1,7 @@
 package com.chat.server;
 
 import com.chat.server.service.AuthService;
+import com.chat.server.service.SessionManager;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -13,12 +14,14 @@ public class ChatServer {
 
     private final int port;
     private final AuthService authService;
+    private final SessionManager sessionManager;
     private final ExecutorService clientThreadPool;
     private volatile boolean running;
 
     public ChatServer(int port) {
         this.port = port;
         this.authService = new AuthService();
+        this.sessionManager = new SessionManager();
         this.clientThreadPool = Executors.newCachedThreadPool();
     }
 
@@ -32,7 +35,7 @@ public class ChatServer {
                 Socket clientSocket = serverSocket.accept();
                 logger.info("New connection from: " + clientSocket.getRemoteSocketAddress());
 
-                ClientHandler handler = new ClientHandler(clientSocket, authService);
+                ClientHandler handler = new ClientHandler(clientSocket, authService, sessionManager);
                 clientThreadPool.submit(handler);
             }
         } catch (IOException e) {

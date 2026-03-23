@@ -1,3 +1,4 @@
+markdown
 # Chat System
 
 Client-server chat system with Swing UI (Telegram-like dark theme).
@@ -10,9 +11,28 @@ Client-server chat system with Swing UI (Telegram-like dark theme).
 
 ## Project Structure
 chat-system/
+├── .gitignore
+├── pom.xml # parent POM
+├── README.md
 ├── server/ # Chat server
-├── client/ # Swing client
-└── README.md
+│ ├── pom.xml
+│ └── src/main/java/com/chat/server/
+│ ├── ChatServer.java
+│ ├── ClientHandler.java
+│ ├── model/
+│ │ └── User.java
+│ └── service/
+│ ├── AuthService.java
+│ └── SessionManager.java
+└── client/ # Swing client
+├── pom.xml
+└── src/main/java/com/chat/client/
+├── ClientApp.java
+├── network/
+│ └── ServerConnection.java
+└── ui/
+├── LoginFrame.java
+└── ChatFrame.java
 
 text
 

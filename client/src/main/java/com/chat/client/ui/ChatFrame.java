@@ -8,6 +8,7 @@ public class ChatFrame extends JFrame {
 
     private final ServerConnection connection;
     private final String nickname;
+    private Timer updateUsersTimer;
 
     private JTextArea chatArea;
     private JTextField messageField;
@@ -20,6 +21,7 @@ public class ChatFrame extends JFrame {
         this.nickname = nickname;
         initUI();
         setupNetworkListener();
+        startAutoUpdateUsers();
     }
 
     private void initUI() {
@@ -72,6 +74,13 @@ public class ChatFrame extends JFrame {
         chatArea.append("Type /help for commands\n\n");
     }
 
+    private void startAutoUpdateUsers() {
+        updateUsersTimer = new Timer(5000, e -> {
+            connection.sendMessage("USERS");
+        });
+        updateUsersTimer.start();
+    }
+
     private void setupNetworkListener() {
         connection.startListening(new ServerConnection.MessageListener() {
             @Override
@@ -82,12 +91,24 @@ public class ChatFrame extends JFrame {
             @Override
             public void onDisconnect() {
                 SwingUtilities.invokeLater(() -> {
-                    JOptionPane.showMessageDialog(ChatFrame.this,
-                            "Disconnected from server",
+                    if (updateUsersTimer != null) {
+                        updateUsersTimer.stop();
+                    }
+
+                    int option = JOptionPane.showConfirmDialog(
+                            ChatFrame.this,
+                            "Connection to server lost. Do you want to reconnect?",
                             "Connection Lost",
-                            JOptionPane.ERROR_MESSAGE);
-                    dispose();
-                    new LoginFrame().setVisible(true);
+                            JOptionPane.YES_NO_OPTION,
+                            JOptionPane.ERROR_MESSAGE
+                    );
+
+                    if (option == JOptionPane.YES_OPTION) {
+                        dispose();
+                        new LoginFrame().setVisible(true);
+                    } else {
+                        System.exit(0);
+                    }
                 });
             }
         });
@@ -207,5 +228,13 @@ public class ChatFrame extends JFrame {
                 chatArea.append("Unknown command. Type /help for commands\n");
                 break;
         }
+    }
+
+    @Override
+    public void dispose() {
+        if (updateUsersTimer != null) {
+            updateUsersTimer.stop();
+        }
+        super.dispose();
     }
 }
